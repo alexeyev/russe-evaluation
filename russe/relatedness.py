@@ -9,11 +9,18 @@ from pandas import read_csv
 from os.path import join
 from russe.common import get_pos
 from pandas import DataFrame
-from nlp.morpho.mystem import analyze_simple
+
+# from nlp.morpho.mystem import analyze_simple
+from russe.dsl_nlp_utils import analyze_simple
 
 # imports from dsl nlp library
-from nlp.patterns import re_numbers, re_latin_chars
-from nlp.common import prt
+# todo: can't find this library in 2023
+# from nlp.patterns import re_numbers, re_latin_chars
+from russe.dsl_nlp_utils import re_numbers, re_latin_chars
+
+from russe.dsl_nlp_utils import prt
+# from nlp.common import prt
+
 
 T = {u"выше": u"hyper",
      u"ниже": u"hypo",
@@ -38,8 +45,8 @@ def load_syn(syn_fpath):
         if node.tag == "entry_rel" and "entry_id" in node.attrib and "concept_id" in node.attrib:
             syn[node.attrib["concept_id"]].add(node.attrib["entry_id"])
             
-    print i, "synonyms loaded"
-    print len(syn), "concepts loaded"
+    print(i, "synonyms loaded")
+    print(len(syn), "concepts loaded")
 
     return syn
 
@@ -59,11 +66,11 @@ def load_entries(fpath):
             else:
                 entries[node.attrib["id"]] = lemma
         except:
-            print "warning: line", i
+            print("warning: line", i)
             #print traceback.format_exc()
             
-    print len(entries), "text entries loaded"
-    print i, "text entries total"
+    print(len(entries), "text entries loaded")
+    print(i, "text entries total")
     return entries
 
 
@@ -83,7 +90,7 @@ def generate_synsets(syn, entries, concepts, selected_words, add_concepts=False,
                 word_num += 1
         if add_concepts:
             if s in concepts: ss.add(concepts[s])
-            else: print "warning: concept not found", s 
+            else: print("warning: concept not found", s)
 
         # select synset?
         if only_selected:
@@ -100,10 +107,10 @@ def generate_synsets(syn, entries, concepts, selected_words, add_concepts=False,
         if len(ss) > 1 and select: synsets[s] = ss
         else: skipped += 1
                 
-    print matched_num, "words matched"
-    print len(synsets), "synsets"
-    print word_num, "words in synsets"
-    print skipped, "synsets skipped"
+    print(matched_num, "words matched")
+    print(len(synsets), "synsets")
+    print(word_num, "words in synsets")
+    print(skipped, "synsets skipped")
 
     return synsets
 
@@ -132,10 +139,10 @@ def load_concepts(fpath):
             #else:
             concepts[node.attrib["id"]] = name
         except:
-            print "warning: line", i
-            print traceback.format_exc()
+            print("warning: line", i)
+            print(traceback.format_exc())
             
-    print len(concepts), "concepts loaded"
+    print(len(concepts), "concepts loaded")
     return concepts
 
 
@@ -150,10 +157,10 @@ def load_relations(fpath):
                 continue
             relations[node.attrib["from"]].append( (node.attrib["to"], node.attrib["name"].lower()) )
         except:
-            print "warning: line", i
-            print traceback.format_exc()
+            print("warning: line", i)
+            print(traceback.format_exc())
             
-    print len(relations), "relations loaded"
+    print(len(relations), "relations loaded")
     return relations
 
 
@@ -162,19 +169,20 @@ def generate_relations(relations, entries, synsets, output_fpath, symmetric=Fals
     with codecs.open(output_fpath, "w", "utf-8") as output_file:
         num = 0
         skipped_num = 0
-        print >> output_file, "word1,word2,sim"
+        print("word1,word2,sim", file=output_file)
+
         for src in relations:
             for dst, sim in relations[src]:
                 # generate pairwise relations beteween synsets
                 for i, wi in enumerate(synsets[src]):
                     for j, wj in enumerate(synsets[dst]):
                         if i > j: # do not generate symmetric, they are alredy in
-                            print >> output_file, "%s,%s,%s" % (wi, wj, T[sim])
+                            print("%s,%s,%s" % (wi, wj, T[sim]), file=output_file)
                             num += 1
 
-        print "#relations b/w words:", num
-        print "#skipped relations b/w concepts:", skipped_num 
-        print "concept relations:", output_fpath
+        print("#relations b/w words:", num)
+        print("#skipped relations b/w concepts:", skipped_num)
+        print("concept relations:", output_fpath)
 
         
 def generate_cohypo(relations, entries, synsets, concepts, output_fpath):
@@ -202,14 +210,14 @@ def generate_cohypo(relations, entries, synsets, concepts, output_fpath):
                                 print >> output_file, "%s,%s,cohypo" % (wi, wj) #, concepts[src].replace(","," "))
                                 num += 1
                      
-        print "#cohypo:", num, numc
-        print "cohypo relations:", output_fpath
+        print("#cohypo:", num, numc)
+        print("cohypo relations:", output_fpath)
          
     
 def mix_filter_relations(output_syn_fpath, output_rel_fpath, output_cohypo_fpath, output_fpath, selected_words, cohypo=False):
     syn_df = read_csv(output_syn_fpath, ',', encoding='utf8')
     rel_df = read_csv(output_rel_fpath, ',', encoding='utf8')
-    print "relations loaded"
+    print("relations loaded")
     df = syn_df.append(rel_df)
     if cohypo:
         cohypo_df = read_csv(output_cohypo_fpath, ',', encoding='utf8')
@@ -225,16 +233,16 @@ def mix_filter_relations(output_syn_fpath, output_rel_fpath, output_cohypo_fpath
     # return 
 
     df = df.sort(['word1', 'sim'], ascending=[1, 1])
-    print "sorted"
+    print("sorted")
     df.to_csv(output_fpath + ".all", sep=',', encoding='utf-8', index=False)
-    print "relations all:", output_fpath + "-all.csv"
+    print("relations all:", output_fpath + "-all.csv")
 
     # Filter according to relation types
     rels2drop = [i for i, row in df.iterrows() if row["sim"] not in ["hyper", "hypo", "syn"]]
     df = df.drop(rels2drop)
     df.to_csv(output_fpath + ".hhs" , sep=',', encoding='utf-8', index=False)
-    print "#relations hypo/hyper/syn:", len(df)
-    print "relations hypo/hyper/syn:", output_fpath + ".hhs"
+    print("#relations hypo/hyper/syn:", len(df))
+    print("relations hypo/hyper/syn:", output_fpath + ".hhs")
 
     # Filter accoring to part of speech
     #rels2drop = [i for i, row in df.iterrows() if get_pos(row["word1"])[0] != "S" or get_pos(row["word2"])[0] != "S"]
@@ -246,21 +254,21 @@ def mix_filter_relations(output_syn_fpath, output_rel_fpath, output_cohypo_fpath
             drop = pos1 != "S" or pos2 != "S"
             if drop:
                 r2d.append(i)
-            print >> pos_file, "%s,%s,%s,%s,%s" % (row["word1"], row["word2"], row["sim"], pos1, pos2)
+            print("%s,%s,%s,%s,%s" % (row["word1"], row["word2"], row["sim"], pos1, pos2), file=pos_file)
 
     df = df.drop(r2d)
     df.to_csv(output_fpath + ".pos" , sep=',', encoding='utf-8', index=False)
-    print "#relations pos:", len(df)
-    print "relations pos:", output_fpath + ".pos"    
+    print("#relations pos:", len(df))
+    print("relations pos:", output_fpath + ".pos")
     
     # Filter according to vocabulary
     rels2drop = [i for i, row in df.iterrows() if row["word1"] not in selected_words]
-    print "#relations to drop:", len(rels2drop)
+    print("#relations to drop:", len(rels2drop))
     df = df.drop(rels2drop)
     df = df.drop_duplicates()
-    print "#final relations", len(df)
+    print("#final relations", len(df))
     df.to_csv(output_fpath , sep=',', encoding='utf-8', index=False)
-    print "relations:", output_fpath
+    print("relations:", output_fpath)
 
 
 def generate_best(input_fpath, best_fpath, res_fpath):
@@ -275,12 +283,12 @@ def generate_best(input_fpath, best_fpath, res_fpath):
         if row.name in black or (row["word2"] > MAX_REL_NUM and row.name not in white)}
     indexes2drop = [i for i, row in df.iterrows() if row["word1"] in words2drop or row["word1"] == row["word2"]]
     df = df.drop(indexes2drop)
-    print "#words2drop:", len(words2drop)
-    print "#relations2drop:", len(indexes2drop)
-    print "#best relations:", len(df)
+    print("#words2drop:", len(words2drop))
+    print("#relations2drop:", len(indexes2drop))
+    print("#best relations:", len(df))
     
     df.to_csv(best_fpath, sep=',', encoding='utf-8', index=False)
-    print "best relations:", best_fpath
+    print("best relations:", best_fpath)
 
 
 
@@ -305,7 +313,7 @@ def clean_ae_fuzzy_duplicates(input_fpath, output_fpath):
             if new_val > old_val:
                 # Use new pair
                 r[word1][word2] = build_full_row(row)
-                print ".", 
+                print(".", end=" ")
             else:
                 # Keed old pair
                 pass 
@@ -314,7 +322,7 @@ def clean_ae_fuzzy_duplicates(input_fpath, output_fpath):
             r[word1][word2] = build_full_row(row)
         
         if i > MAX_PAIRS_NUM: break
-    print ""
+    print("")
     
     # convert to the right format
     rr = [{"word1":r[w1][w2]["word1"], "word2":r[w1][w2]["word2"],
@@ -327,4 +335,4 @@ def clean_ae_fuzzy_duplicates(input_fpath, output_fpath):
     
     df = DataFrame(rr)
     df.to_csv(output_fpath, sep=',', index=False, encoding='utf-8', cols=["word1","word2","sim","dir","inv"])    
-    print "output:", output_fpath
+    print("output:", output_fpath)

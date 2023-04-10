@@ -21,14 +21,14 @@ def hj_evaluation_args(args):
 
 
 def hj_evaluation(hj_fpath):
-    print "======================================================="
-    print "Evaluation based on correlations with human judgements"
-    print "See Section 1.1 of http://russe.nlpub.ru/task\n"
+    print("=======================================================")
+    print("Evaluation based on correlations with human judgements")
+    print("See Section 1.1 of http://russe.nlpub.ru/task\n")
 
-    print "Input file:", hj_fpath
+    print("Input file:", hj_fpath)
     hj_df = read_csv(hj_fpath, ',', encoding='utf8')
-    print "Spearman's correlation with human judgements:\t%.5f (p-value = %.3f)" % spearmanr(hj_df.usim, hj_df.sim)
-    print "Pearson's correlation with human judgements:\t%.5f (p-value = %.3f)" % pearsonr(hj_df.usim, hj_df.sim)
+    print("Spearman's correlation with human judgements:\t%.5f (p-value = %.3f)" % spearmanr(hj_df.usim, hj_df.sim))
+    print("Pearson's correlation with human judgements:\t%.5f (p-value = %.3f)" % pearsonr(hj_df.usim, hj_df.sim))
 
     return spearmanr(hj_df.usim, hj_df.sim)[0]
 
@@ -38,9 +38,9 @@ def semantic_relation_classification_evaluation_args(args):
 
 
 def semantic_relation_classification_evaluation(src_fpath):
-    print "\n======================================================="
-    print "Evaluation based on semantic relation classificaton"
-    print "See Section 1.2 of http://russe.nlpub.ru/task\n"
+    print("\n=======================================================")
+    print("Evaluation based on semantic relation classificaton")
+    print("See Section 1.2 of http://russe.nlpub.ru/task\n")
 
     y_test, y_predict, y_score = predict_by_sim(src_fpath)
     s = src_evaluation(y_test, y_predict, y_score, src_fpath)
@@ -60,9 +60,9 @@ def src_evaluation(y_test, y_predict, y_score, src_fpath, print_data=False):
     s["accuracy"] = accuracy_score(y_test, y_predict)
     
     for statistic in s:
-        print "%s: %.3f" % (statistic, s[statistic])
+        print("%s: %.3f" % (statistic, s[statistic]))
         
-    print classification_report(y_test, y_predict)
+    print(classification_report(y_test, y_predict))
     
     # Plot Precision-Recall curve
     plt.clf()
@@ -75,7 +75,7 @@ def src_evaluation(y_test, y_predict, y_score, src_fpath, print_data=False):
     if SHOW: plt.show()
     fig_fpath = splitext(src_fpath)[0] + "-pr.png"
     plt.savefig(fig_fpath)
-    print "precision-recall plot:", fig_fpath
+    print("precision-recall plot:", fig_fpath)
 
     return s["average_precision"], s["accuracy"]
 
@@ -84,7 +84,7 @@ def print_y(y_test, y_score):
     y_test = np.reshape(y_test, (y_test.shape[0], 1))
     y_score = np.reshape(y_score, (y_score.shape[0], 1))
     y = np.hstack([y_test, y_score])
-    print y[y[:,1].argsort()][::-1]
+    print(y[y[:,1].argsort()][::-1])
 
 
 def predict_by_sim(df_fpath):
@@ -109,7 +109,7 @@ def predict_by_sim(df_fpath):
     df["predict"] = y_predict
     output_fpath = splitext(df_fpath)[0] + "-predict.csv"
     df.to_csv(output_fpath, sep=',', encoding='utf-8', index=False)
-    print "predict:", output_fpath
+    print("predict:", output_fpath)
     
     df = df.fillna(0.0)
     y_test = df.sim.values.tolist()

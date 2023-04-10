@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import russe.relatedness as rt
 from russe.common import generate_synonyms
 from russe.common import sample_pairs
@@ -33,4 +35,4 @@ rt.mix_filter_relations(output_syn_fpath, output_rel_fpath, output_cohypo_fpath,
 
 #sample_pairs(best_fpath, test_each=2)  
 
-print time() - tic, "sec."
+print(time() - tic, "sec.")

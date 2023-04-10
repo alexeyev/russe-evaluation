@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding=utf8
+# -*- coding: utf-8 -*-
 
 from sys import stderr
 import csv
@@ -24,7 +24,7 @@ def get_word_variants(word, prefix2word):
 
 
 def get_word_variants_morph(word, vectors, logfile):
-    print >> logfile, ("WARNING: splitting word %s" % word).encode('utf-8')
+    print(("WARNING: splitting word %s" % word).encode('utf-8'), file=logfile)
     res = set()
     word = word.replace(u' ', u'_').replace(u'-', u'_').strip()
     for w in word.split(u'_'):
@@ -34,7 +34,7 @@ def get_word_variants_morph(word, vectors, logfile):
     if len(res) != 0:
         return res
 
-    for i in xrange(int(2*len(word)/3)):
+    for i in range(int(2*len(word)/3)):
         part1 = word[i+1:]
         if part1 in vectors:
             res.add(part1)
@@ -65,9 +65,9 @@ def sim(vectors, prefix2word, word1, word2, logfile, morph_hack):
         s.append('|'.join(('!' if x == best else '+' if x in vectors else '-') + x for x in options))
 
     if res is None:
-        print >> logfile, ("ERROR: <%s>,<%s>\tsim(%s, %s)" % (word1, word2, s[0], s[1])).encode('utf-8')
+        print(("ERROR: <%s>,<%s>\tsim(%s, %s)" % (word1, word2, s[0], s[1])).encode('utf-8'), file=logfile)
     else:
-        print >> logfile, ("<%s>,<%s>\t%f = sim(%s, %s)" % (word1, word2, res, s[0], s[1])).encode('utf-8')
+        print(("<%s>,<%s>\t%f = sim(%s, %s)" % (word1, word2, res, s[0], s[1])).encode('utf-8'), file=logfile)
 
     return res if res is not None else 0.0
 
@@ -91,7 +91,7 @@ def main():
     cout = args.column
     morph_hack = args.morph
 
-    print >> stderr, "Loading vectors from {}".format(fvec)
+    print("Loading vectors from {}".format(fvec), file=stderr)
     vectors = load_vectors(fvec)
 
     # for words with underscore (ex: берег_v, берег_s, северо_запад, вода_и_медные_трубы)
@@ -109,7 +109,7 @@ def main():
     #     if len(e[1]) > 1:
     #         print >> stderr, ("%s: %s" % (e[0], ':'.join(e[1]))).encode('utf-8')
 
-    print >> stderr, "Calculating similarity for {}; writing result to {}".format(fin, fout)
+    print("Calculating similarity for {}; writing result to {}".format(fin, fout), file=stderr)
     with open(fin, 'r') as input_file, open(fout, "w") as output_file, open(fout+'.log', "w") as log_file:
         inp = csv.DictReader(input_file, delimiter=',', quoting=csv.QUOTE_MINIMAL, quotechar="'")
         # inp_fieldnames = inp.fieldnames
@@ -118,7 +118,7 @@ def main():
         out.writeheader()
         for linenum, ex in enumerate(inp):
             if linenum % 1000 == 0:
-                    print 'Lines processed: {}'.format(linenum)
+                    print('Lines processed: {}'.format(linenum))
 
             ex[cout] = sim(vectors, prefix2word, ex['word1'].decode('utf-8'), ex['word2'].decode('utf-8'), log_file, morph_hack)
             out.writerow(ex)

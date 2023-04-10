@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import csv
 csv.field_size_limit(sys.maxsize)
@@ -20,7 +22,8 @@ class CsvHandler:
         #self.freq_dict = {}
         self.fd = defaultdict(dict)
 
-    def do_cprofile(func):
+    def do_cprofile(self, func):
+        # todo: remove? isn't used anyway
         def profiled_func(*args, **kwargs):
             profile = cProfile.Profile()
             try:

@@ -27,8 +27,8 @@ def get_test(test_fpath):
 
 
 def create_usim(df_fpath, test_fpath):
-    print "golden standard:", df_fpath
-    print "test.csv:", test_fpath
+    print("golden standard:", df_fpath)
+    print("test.csv:", test_fpath)
     test = get_test(test_fpath)
 
     df = read_csv(df_fpath, ',', encoding='utf8')
@@ -47,19 +47,19 @@ def create_usim(df_fpath, test_fpath):
 
     df["usim"] = Series(usim_lst)
 
-    print "not found", not_found_num, "of", i
-    print "used", i - not_found_num
+    print("not found", not_found_num, "of", i)
+    print("used", i - not_found_num)
 
     usim_fpath = join(dirname(test_fpath), splitext(basename(df_fpath))[0] + "-usim.csv")
     df.to_csv(usim_fpath, encoding="utf-8", index=False, sep=",")
-    print "golden standard + test.csv:", usim_fpath, "\n"
+    print("golden standard + test.csv:", usim_fpath, "\n")
 
     return usim_fpath
 
 
 def evaluation(args):
     
-    print "test.csv:", args.test_fpath
+    print("test.csv:", args.test_fpath)
 
     hj_fpath = create_usim(HJ_TEST, args.test_fpath)
     rt_fpath = create_usim(RT_TEST, args.test_fpath)
@@ -74,8 +74,8 @@ def evaluation(args):
     r["rt-avep"], r["rt-accuracy"] = semantic_relation_classification_evaluation(rt_fpath)
     r["ae-avep"], r["ae-accuracy"] = semantic_relation_classification_evaluation(ae_fpath)
     r["ae2-avep"], r["ae2-accuracy"] = semantic_relation_classification_evaluation(ae2_fpath)
-    print >> stderr, "hj\trt-avep\trt-accuracy\tae-avep\tae-accuracy\tae2-avep\tae2-accuracy"
-    print >> stderr, "%(hj).5f\t%(rt-avep).5f\t%(rt-accuracy).5f\t%(ae-avep).5f\t%(ae-accuracy).5f\t%(ae2-avep).5f\t%(ae2-accuracy).5f" % r
+    print("hj\trt-avep\trt-accuracy\tae-avep\tae-accuracy\tae2-avep\tae2-accuracy", file=stderr)
+    print("%(hj).5f\t%(rt-avep).5f\t%(rt-accuracy).5f\t%(ae-avep).5f\t%(ae-accuracy).5f\t%(ae2-avep).5f\t%(ae2-accuracy).5f" % r, file=stderr)
 
 
 def main():

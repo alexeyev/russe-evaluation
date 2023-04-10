@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import codecs
 from os.path import splitext
@@ -7,8 +9,11 @@ import re
 from pymystem3 import Mystem
 
 # dependenies to the dsl nlp repository
-from nlp.common import wc
-from nlp.patterns import re_numbers
+# from nlp.common import wc
+# from nlp.patterns import re_numbers
+from russe.dsl_nlp_utils import wc
+from russe.dsl_nlp_utils import re_number
+
 
 _mystem = Mystem()
 
@@ -40,7 +45,7 @@ def sort_pairs(input_fpath):
 
     output_fpath = splitext(input_fpath)[0] + "-sort.csv"
     df.to_csv(output_fpath, sep=',', encoding='utf-8', index=False)
-    print "sorted:", output_fpath
+    print("sorted:", output_fpath)
 
     return output_fpath
 
@@ -65,15 +70,15 @@ def simmetrize(pairs_fpath):
             continue
 
     with codecs.open(output_fpath, "w", "utf-8") as output_file:
-        print >> output_file, "word1,word2,sim,dir,inv"
+        print("word1,word2,sim,dir,inv", file=output_file)
 
         for i, w1 in enumerate(rels):
             #if i > 100: break
             for w2 in rels[w1]:
-                print >> output_file, "%s,%s,%s,%s,%s" % (
-                    w1, w2, rels[w1][w2]["sim"], rels[w1][w2]["dir"], rels[w1][w2]["inv"])
+                print("%s,%s,%s,%s,%s" % (
+                    w1, w2, rels[w1][w2]["sim"], rels[w1][w2]["dir"], rels[w1][w2]["inv"]), file=output_file)
 
-    print "simmetrized file:", output_fpath
+    print("simmetrized file:", output_fpath)
 
     return output_fpath
 
@@ -86,12 +91,13 @@ def sample_pairs(pairs_fpath, test_each=2, extended=False):
     
     with codecs.open(test_fpath, "w", "utf-8") as test, codecs.open(train_fpath, "w", "utf-8") as train:
         if extended:
-            print >> test, "word1,word2,sim,dir,inv"
-            print >> train, "word1,word2,sim,dir,inv"
+            print("word1,word2,sim,dir,inv", file=test)
+            print("word1,word2,sim,dir,inv", file=train)
         else:
-            print >> test, "word1,word2,sim"
-            print >> test, "word1,word2,sim"
-        
+            # todo: make sure there was no mistake here in the original code
+            print("word1,word2,sim", file=test)
+            print("word1,word2,sim", file=test)
+
         prev = "*"
         stim_num = 0
         train_pairs = 0
@@ -114,19 +120,19 @@ def sample_pairs(pairs_fpath, test_each=2, extended=False):
                 train_pairs += 1
 
             if extended:
-                print >> out, "%s,%s,%s,%s,%s" % (row["word1"], row["word2"], row["sim"], row["dir"], row["inv"])
+                print("%s,%s,%s,%s,%s" % (row["word1"], row["word2"], row["sim"], row["dir"], row["inv"]), file=out)
             else:
-                print >> out, "%s,%s,%s" % (row["word1"], row["word2"], row["sim"])
+                print("%s,%s,%s" % (row["word1"], row["word2"], row["sim"]), file=out)
             
-    print "TEST"
-    print "file:", test_fpath
-    print "#pairs:", wc(test_fpath)
-    print "#stimuls:", test_stim
+    print("TEST")
+    print("file:", test_fpath)
+    print("#pairs:", wc(test_fpath))
+    print("#stimuls:", test_stim)
 
-    print "\nTRAIN"
-    print "file:", train_fpath
-    print "#pairs:", wc(train_fpath)
-    print "#stimuls:", train_stim
+    print("\nTRAIN")
+    print("file:", train_fpath)
+    print("#pairs:", wc(train_fpath))
+    print("#stimuls:", train_stim)
 
 
 def split_pairs(pairs_fpath, folds=10, extended=False):
@@ -136,7 +142,7 @@ def split_pairs(pairs_fpath, folds=10, extended=False):
     src = pairs_fpath.split("/")[-1]
 
     with codecs.open(out_fpath, "w", "utf-8") as out:
-        print >> out, "num,word1,word2,related,comment,src"
+        print("num,word1,word2,related,comment,src", file=out)
         
         prev = "*"
         stim_num = 0
@@ -154,10 +160,10 @@ def split_pairs(pairs_fpath, folds=10, extended=False):
         
         for k in res:
             for i, p in enumerate(res[k]):
-                print >> out, "%d,%s,%s,,,%s" % (k, p[0], p[1], src)
-            print k, ":", i
+                print(out, "%d,%s,%s,,,%s" % (k, p[0], p[1], src))
+            print(k, ":", i)
         
-        print "output:", out_fpath
+        print("output:", out_fpath)
         #print res
 
     # print "TEST"
@@ -171,33 +177,31 @@ def split_pairs(pairs_fpath, folds=10, extended=False):
     # print "#stimuls:", train_stim
 
 
-
-
 def process_associations(ae_fpath, ae_stat_fpath):
     ae = pd.read_csv(ae_fpath, ',', encoding='utf8')
-    print "#pairs:", len(ae)
+    print("#pairs:", len(ae))
     ae_stat = pd.read_csv(ae_stat_fpath, ',', encoding='utf8')
 
     words2drop = {row["word"]: row["num_ge3"] for i, row in ae_stat.iterrows()}
-    print "#word1:", len(words2drop)
+    print("#word1:", len(words2drop))
     words2drop = {word: words2drop[word] for word in words2drop if words2drop[word] < 9}
-    print "#word2drop:", len(words2drop)
+    print("#word2drop:", len(words2drop))
 
     pairs2drop = [i for i, row in ae.iterrows() if row["word1"] in words2drop]
-    print "#pairs2drop:", len(pairs2drop)
+    print("#pairs2drop:", len(pairs2drop))
     ae = ae.drop(pairs2drop)
-    print "#pairs final:", len(ae)
+    print("#pairs final:", len(ae))
 
     ae_out_fpath = splitext(ae_fpath)[0] + ".out.csv"
     ae.to_csv(ae_out_fpath, sep=',', encoding='utf-8', index=False)
-    print "saved to:", ae_out_fpath
+    print("saved to:", ae_out_fpath)
 
     test_fpath = splitext(ae_fpath)[0] + ".test.csv"
     train_fpath = splitext(ae_fpath)[0] + ".train.csv"
 
     with codecs.open(test_fpath, "w", "utf-8") as test, codecs.open(train_fpath, "w", "utf-8") as train:
-        print >> test, "word1,word2,sim"
-        print >> train, "word1,word2,sim"
+        print("word1,word2,sim", file=test)
+        print("word1,word2,sim", file=train)
 
         prev = "*" 
         stim_num = 0
@@ -220,15 +224,15 @@ def process_associations(ae_fpath, ae_stat_fpath):
             else:
                 out = train
                 train_pairs += 1
-            print >> out, "%s,%s,%d" % (row["word1"], row["word2"], row["sim"])
+            print("%s,%s,%d" % (row["word1"], row["word2"], row["sim"]), file=out)
 
-    print "test:", test_fpath
-    print "test pairs:", wc(test_fpath)
-    print "test stim:", test_stim
+    print("test:", test_fpath)
+    print("test pairs:", wc(test_fpath))
+    print("test stim:", test_stim)
 
-    print "train:", train_fpath
-    print "train pairs:", wc(train_fpath)
-    print "train stim:", train_stim
+    print("train:", train_fpath)
+    print("train pairs:", wc(train_fpath))
+    print("train stim:", train_stim)
 
 
 # YARN stuff
@@ -245,9 +249,9 @@ def get_synsets(yarn_fpath, synset_fpath):
             synsets[row.synset_id].add(row.word)
         
             if prev_id != -1 and row.synset_id != prev_id:
-                print >> synset_file, "\n"
+                print("\n", file=synset_file)
             else:
-                print >> synset_file, "%s," % row.word,
+                print("%s," % row.word, file=synset_file, end=" ")
             prev_id = row.synset_id
             
     return synsets
@@ -255,14 +259,14 @@ def get_synsets(yarn_fpath, synset_fpath):
 
 def generate_synonyms(synsets, output_fpath, symmetric=True, spaser=False):
     with codecs.open(output_fpath, "w", "utf-8") as output_file:
-        print >> output_file, "word1,word2,sim"
+        print("word1,word2,sim", file=output_file)
         for s in synsets:
             for i, wi in enumerate(synsets[s]):
                 for j, wj in enumerate(synsets[s]):
                     if not symmetric and i > j:
-                        print >> output_file, "%s,%s,syn" % (wi, wj)
+                        print("%s,%s,syn" % (wi, wj), file=output_file)
                     elif i != j:
-                        print >> output_file, "%s,%s,syn" % (wi, wj)
-            if spaser: print >> output_file, ""
+                        print("%s,%s,syn" % (wi, wj), file=output_file)
+            if spaser: print("", file=output_file)
 
-    print "synonyms:", output_fpath
+    print("synonyms:", output_fpath)

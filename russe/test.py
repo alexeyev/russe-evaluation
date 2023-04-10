@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import russe.relatedness as rt
 from russe.common import generate_synonyms
 from time import time
@@ -31,4 +33,4 @@ selected_words = rt.load_voc(voc_fpath)
 rt.mix_filter_relations(output_syn_fpath, output_rel_fpath, output_cohypo_fpath, output_fpath, selected_words)
 
 
-print time() - tic, "sec."
+print(time() - tic, "sec.")

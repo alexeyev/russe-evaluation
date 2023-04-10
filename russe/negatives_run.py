@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from os.path import join
 from russe.negatives import generate_negatives
 
