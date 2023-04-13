@@ -26,7 +26,7 @@ def hj_evaluation(hj_fpath):
     print("See Section 1.1 of http://russe.nlpub.ru/task\n")
 
     print("Input file:", hj_fpath)
-    hj_df = read_csv(hj_fpath, ',', encoding='utf8')
+    hj_df = read_csv(hj_fpath, sep=',', encoding='utf8')
     print("Spearman's correlation with human judgements:\t%.5f (p-value = %.3f)" % spearmanr(hj_df.usim, hj_df.sim))
     print("Pearson's correlation with human judgements:\t%.5f (p-value = %.3f)" % pearsonr(hj_df.usim, hj_df.sim))
 
@@ -120,7 +120,8 @@ def predict_by_sim(df_fpath):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='RUSSE Evaluation Script. See http://russe.nlpub.ru for more details.')	
+    parser = argparse.ArgumentParser(description='RUSSE Evaluation Script. See http://russe.nlpub.ru for more details.')
+    parser.set_defaults(func=lambda _: parser.print_help())
     subparsers = parser.add_subparsers(description='Help for subcommand.')
     parser_hj = subparsers.add_parser('hj', description='Evaluation based on correlations with human judgements.')
     parser_hj.set_defaults(func=hj_evaluation_args)
