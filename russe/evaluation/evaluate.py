@@ -125,7 +125,7 @@ def main():
     subparsers = parser.add_subparsers(description='Help for subcommand.')
     parser_hj = subparsers.add_parser('hj', description='Evaluation based on correlations with human judgements.')
     parser_hj.set_defaults(func=hj_evaluation_args)
-    parser_hj.add_argument('--hj_fpath', help='A CSV file in the format "word1,word2,hj,sim" e.g. ' + HJ_FILE, default=HJ_FILE)
+    parser_hj.add_argument('--hj_fpath', help='A CSV file in the format "word1,word2,usim,sim" e.g. ' + HJ_FILE, default=HJ_FILE)
 
     parser_hj = subparsers.add_parser('src', description='Evaluation based on semantic relation classification.')
     parser_hj.set_defaults(func=semantic_relation_classification_evaluation_args)
